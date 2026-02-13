@@ -1,0 +1,84 @@
+---
+title: "Energy"
+output: html_document
+date: "2026-02-10"
+---
+
+## Renewable Energy dataset
+
+
+```{r }
+library(readr)
+energy <- read_csv('../../data/IRENA data.csv', skip=1)
+```
+
+
+## Gapminder dataset
+
+
+```{r}
+library(gapminder)
+library(dplyr)
+data(gapminder)
+gapminder %>% head
+```
+
+
+## Carbon emissions
+
+
+```{r}
+library(dplyr)
+library(readr)
+
+
+url <- 'https://nyc3.digitaloceanspaces.com/owid-public/data/co2/owid-co2-data.csv'
+carbon <- read_csv(url) 
+carbon %>% head
+```
+
+
+## Levelized cost of energy
+
+
+```{r}
+url <- 'https://raw.githubusercontent.com/ericmkeen/sewanee_esus/master/02_energy_sector/levelized-cost-of-energy.csv'
+econ <- read_csv(url)
+econ %>% head
+```
+
+
+
+```{r}
+library(ggplot2)
+
+ggplot(econ,
+       aes(
+         x = year,
+         y = cost,
+         color = source
+       )) + 
+  geom_point() + 
+  geom_hline(yintercept = 0.05, ity = 2) + 
+  geom_hline(yintercept = 0.18, ity = 3) + 
+  annotate(geom = 'text', 
+           x = 1990, y = 0.1,
+           size = 2,
+           label = 'Range of fossil\n fuel
+           costs')
+```
+
+
+```{r}
+#install.packages("knitr")
+library(knitr)
+econ %>% 
+  filter(year == 2020) %>% 
+  group_by(source) %>% 
+  summarize(cost = mean(cost, na.rm = TRUE)) %>% 
+  kable
+```
+
+
+
+
