@@ -1,1 +1,1 @@
-datastory1 Here is the link to the data story.
+[Max Patterson datastory1](file:///Users/maximilianpatterson/Downloads/Data_storytelling/Repos/Energy/docs/Index.html#australia's-CO2-emission-history) Here is the link to data story 1 about The impacts of the development of solar photovoltaic energy on CO2 emissions in Australia.
