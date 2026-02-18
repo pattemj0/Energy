@@ -1,22 +1,22 @@
 ---
-title: "Energy"
+title: "Solar in Australia"
 output: html_document
-date: "2026-02-10"
+date: "2026-02-18"
+author: Max Patterson
 ---
 
-## Renewable Energy dataset
 
 
-```{r }
+```{r, include=FALSE, warning=FALSE}
+library(plotly)
 library(readr)
 energy <- read_csv('../../data/IRENA data.csv', skip=1)
 ```
 
 
-## Gapminder dataset
 
 
-```{r}
+```{r, include=FALSE, warning=FALSE}
 library(gapminder)
 library(dplyr)
 data(gapminder)
@@ -24,10 +24,9 @@ gapminder %>% head
 ```
 
 
-## Carbon emissions
 
 
-```{r}
+```{r, include=FALSE, warning=FALSE}
 library(dplyr)
 library(readr)
 
@@ -38,10 +37,9 @@ carbon %>% head
 ```
 
 
-## Levelized cost of energy
 
 
-```{r}
+```{r, include=FALSE, warning=FALSE}
 url <- 'https://raw.githubusercontent.com/ericmkeen/sewanee_esus/master/02_energy_sector/levelized-cost-of-energy.csv'
 econ <- read_csv(url)
 econ %>% head
@@ -49,7 +47,7 @@ econ %>% head
 
 
 
-```{r}
+```{r, include=FALSE, warning=FALSE}
 library(ggplot2)
 
 ggplot(econ,
@@ -69,7 +67,7 @@ ggplot(econ,
 ```
 
 
-```{r}
+```{r, include=FALSE, warning=FALSE}
 #install.packages("knitr")
 library(knitr)
 econ %>% 
@@ -78,6 +76,375 @@ econ %>%
   summarize(cost = mean(cost, na.rm = TRUE)) %>% 
   kable
 ```
+
+```{r, include=FALSE, warning=FALSE}
+
+#dataset of carbon data from countries with and without nuclear
+library(dplyr)
+#carbon %>% View
+nuke <- carbon %>% 
+  group_by(country) %>% 
+  filter(country %in% c("Germany","France","Slovakia","Italy", "Taiwan", "Ukraine"))
+
+
+#graph of co2 emmissions per capita of countries with and without nuclear energy
+ggplot(nuke,
+       aes(
+         x = year,
+         y = co2_per_capita,
+         color = country
+       )) + 
+  geom_line()
+```
+
+```{r, include=FALSE, warning=FALSE}
+#dataset of levelized cost of energy in countries with and without nuclear
+nukecost <- econ %>% filter(country %in% c("France","Germany","Slovakia","Taiwan","Italy","Ukraine"))
+
+nukecost %>% group_by(source) %>% summarize()
+
+#graph of the former
+ggplot(nukecost,
+       aes(
+         x = year,
+         y = cost,
+         color = country
+       )) + 
+  geom_line()
+```
+
+```{r, include=FALSE, warning=FALSE}
+solarcost <- econ %>% filter(source %in% ("Solar photovoltaic")) %>% filter(country %in% ("Australia"))
+australiacarbon <- carbon %>% filter(country %in% ("Australia"))
+
+australiacarbon2000 <- carbon %>% filter(country %in% ("Australia")) %>% filter (year %in% c("2000","2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009","2010",  "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024", "2025", "2026"))
+
+ggplot(australiacarbon,
+       aes(
+         x = year,
+         y = co2
+       )) + 
+  geom_line()
+
+ggplot(solarcost,aes(
+  x = year,
+  y = cost
+)) + 
+  geom_line()
+```
+
+
+```{r, include=FALSE, warning=FALSE}
+#Plot of australia's co2 emmisions including luc
+ggplot(australiacarbon,
+       aes(
+         x = year,
+         y = co2_including_luc
+       )) + 
+  geom_line() + 
+  labs(title = "Australia's co2 emmissions including land use change",
+       x = "year",
+       y = "co2 emmissions (UNITS)")
+
+#Plot of Australia's co2 emmissions
+ggplot(australiacarbon,
+       aes(
+         x = year,
+         y = co2
+       )) + 
+  geom_line() + 
+  labs(title = "Australia's co2 emmissions",
+       x = "year",
+       y = "co2 emmissions (UNITS)")
+
+```
+
+```{r, include=FALSE, warning=FALSE}
+econaus <- econ %>% filter(country %in% ("Australia"))
+ggplot(econaus,
+       aes(
+         x = year,
+         y = cost,
+         color = source
+       )) + 
+  geom_line() + 
+  labs(title = "Cost of solar photovoltaic energy technology in Australia",
+       x = "year",
+       y = "cost (UNITS)")
+
+```
+
+```{r, include=FALSE, warning=FALSE}
+#Graph of Australia's co2 emmissions including luc since 2000
+
+ggplot(australiacarbon2000,
+       aes(
+         x = year,
+         y = co2_including_luc
+       )) + 
+  geom_line()
+
+#Graph of Australia's co2 emmissions since 2000
+ggplot(australiacarbon2000,
+       aes(
+         x = year,
+         y = co2
+       )) + 
+  geom_line()
+
+#Graph of Australia's co2 emmissions per capita since 2000
+
+ggplot(australiacarbon2000,
+       aes(
+         x = year,
+         y = co2_per_capita
+       )) + 
+  geom_line()
+
+#Graph of Australia's co2 emmissions per capita since 2000 including luc
+ggplot(australiacarbon2000,
+       aes(
+         x = year,
+         y = co2_including_luc_per_capita
+       )) + 
+  geom_line() + 
+  labs(title = "co2 emmissions including land use change per capita",
+       x = "year",
+       y = "co2 emmissions (UNITS)")
+```
+
+
+
+```{r, include=FALSE, warning=FALSE}
+#Graph of Australia's energy from solar photovoltaic
+energyaus <- energy %>% filter(`Country/area` %in% "Australia")
+solaraus <- energyaus %>% filter(Technology %in% "Solar photovoltaic") %>% 
+  mutate(elec = as.numeric(as.character(`Electricity statistics`)))
+ggplot(solaraus,
+       aes(
+         x = Year,
+         y = elec,
+       )) + 
+  geom_line()
+
+```
+
+
+```{r, include=FALSE, warning=FALSE}
+topsolar <- energy %>% group_by(`Country/area`) %>% filter(Technology %in% ("Solar photovoltaic")) %>% filter(Year %in% ("2023")) %>% mutate(ElectricityGWh = as.numeric(as.character(`Electricity statistics`)))
+
+```
+
+## Introduction
+
+In a world facing climate change as a result of increased atmospheric CO2 primarily resulting from the burning of fossil fuels, there has been increased attention placed on the development of renewable energy. At the [Rio+20](https://sdgs.un.org/goals) summit nations from around the world gathered to 
+determine steps that should be taken to reach a sustainable future. They came up with 17 goals 
+to strive for.
+
+1. End extreme poverty
+2. End hunger and promote sustainable agriculture
+3. Ensure healthy lives for all
+4. Ensure quality education and lifelong learning
+5. Achiave gender equality and empower women and girls
+6. Ensure availability and sustainable management of water and sanitation for all
+7. Ensure access to affordable, reliable, sustainable and modern energy for all
+8. Promote sustained, inclusive and sustainable economic growth, full and productive employment and decent work for all
+9. Build resilient infrastructure, promote inclusive and sustainable industrialization and foster innovation
+10. Reduce inequality within and among countries
+11. Make cities and human settlements inclusive, safe, resilient and sustainable
+12. Ensure sustainable consumption and production patterns
+13. Take urgent action to combat climate change and its impacts
+14. Conserve and sustainably use the oceans, seas and marine resources for sustainable development
+15. Protect, restore and promote sustainable use of terrestrial ecosystems, sustainably manage forests, combat desertification, and halt and reverse land degradation and halt biodiversity loss
+16. Promote peaceful and inclusive societies for sustainable development, provide access to justice for all and build effective, accountable and inclusive institutions at all levels
+17. Strengthen the means of implementation and revitalize the Global Partnership for Sustainable Development
+
+Renewable energy fulfills many of the sustainable development goals
+defined at the Rio+20 Summit, especially goal number 7, which aims to provide access to sustainable modern energy. Solar photovoltaic energy has seen both a drastic reduction in cost as well as an increase in implementation over the last several years. As a result, it would be useful to take a look at whether this technology truly allows us to meet sustainability goals. Australia is one of the world's leaders in solar photovoltaic energy development.
+Today we will take a closer look at the impacts the development of solar photovoltaic energy has had in Australia.
+
+
+## Australia's CO2 emission history
+
+```{r, echo = FALSE, warning=FALSE}
+ggplot(australiacarbon,
+       aes(
+         x = year,
+         y = co2
+       )) + 
+  geom_line() + 
+  labs(title = "Australia's CO2 emissions",
+       x = "year",
+       y = "CO2 (Mt)")
+```
+
+The graph shown above demonstrates how Australia's CO2 emissions have steadily 
+increased over the course of the last century following a similar trend to the rest 
+of the world. In order to have a more complete picture of CO2 we must however include 
+CO2 emissions resulting from land use change as well. This is especially important to 
+our story because solar energy requires a lot of land and thus coincides with a change in land use.
+
+```{r, include = FALSE, warning=FALSE}
+ggplot(australiacarbon,
+       aes(
+         x = year,
+         y = co2_including_luc
+       )) + 
+  geom_path() + 
+  labs(title = "Australia's CO2 emissions including land use change",
+       x = "year",
+       y = "CO2 (Mt)")
+```
+```{r, echo=FALSE, warning=FALSE}
+ggplotly()
+```
+
+As you can see, this graph gives a more complex picture of Australia's CO2 emissions,
+however there is still a clear increase over the course of the last century.
+
+It is clear from these graphs that CO2 emissions have been increasing in Australia.
+This is **not sustainable** as it leads to climate change, therefore it is essential 
+to find a solution that may lead to a decrease in these emissions.
+
+## Solar photovoltaic energy as a solution in Australia
+
+In order to reduce CO2 emissions and allow continuous but sustainable economic growth, 
+Australia has put a lot of effort into the development of solar photovoltaic energy. They are among the nations with the highest production of energy from this source. The
+nations with the largest ammount of energy from solar photovoltaic include:
+
+- China
+- the United States
+- India
+- Japan
+- Brazil
+- Australia
+
+The table below 
+shows the countries with the highest amount of energy produced from photovoltaic solar panels 
+in 2023.
+
+```{r, echo = FALSE, warning=FALSE}
+topsolar %>% 
+  filter(`Country/area` %in% c("China", "India", "Brazil", "Australia", "United States of America (the)", "Japan")) %>% 
+  summarize (ElectricityGWh) %>%  
+  kable
+```
+
+This table demonstrates that Australia is one of the nations with highest energy 
+production from photovoltaic solar panels. In the next couple graphs we will have a 
+look at how the development of this technology occured in Australia so that we may then see 
+how it impacted their carbon emissions.
+
+```{r, echo=FALSE, warning=FALSE}
+ggplot(solaraus,
+       aes(
+         x = Year,
+         y = elec
+       )) + 
+  geom_line() + 
+  labs(title = "Increase in solar photovoltaic energy in Australia",
+       x = "year",
+       y = "energy from solar (GWh)")
+```
+
+As you can see from this graph, the amount of energy sourced from solar photovoltaic 
+technology has been growing exponentially in Australia since the early 2000s. This is likely a result of the decrease in price of this technology over the course of the same period as shown in the following graph.
+
+```{r, echo=FALSE, warning=FALSE}
+ggplot(solarcost,
+       aes(
+         x = year,
+         y = cost
+       )) + 
+  geom_line() + 
+  labs(title= "Decrease in cost of solar photovoltaic technology in Australia",
+       x = "year",
+       y = "cost")
+```
+
+This graph shows that the cost of photovoltaic solar panels decreased significantly between 2010 and 2013. This coincides with the time when solar panel energy production grew significantly 
+in Australia.
+
+## Impacts on CO2 emissions
+
+We can see that solar energy has increased in Australia in the last decades, but what impact has this had on CO2 emissions? Let's see how CO2 emissions and solar energy developed over the same period of time.
+
+```{r, echo=FALSE, warning=FALSE}
+ggplot(australiacarbon2000,
+       aes(
+         x = year,
+         y = co2
+       )) + 
+  geom_line() +
+  labs(title = "CO2 emissions in Australia since 2000",
+       x = "year",
+       y = "CO2 (Mt)")
+```
+
+It is important to note that the y-axis in this graph begins at *350 Mt* instead of 0 in order to make the trend more clear. At first glance we may find this graph dissapointing as we cannot see a clear decrease in emissions we may have been hoping for. We must however remember that the  [past trend of CO2 emissions](#australia's-co2-emission-history) was a drastic increase. 
+When we keep this in mind it becomes clear that **between the years 2000 and 2023 this growth has stopped**. Interestingly, around the year 2019 when photovoltaic solar panels took off even more than 
+before we begin to see a decrease in CO2 emissions. It is possible that other factors are at play though.
+
+A potential issue with photovoltaic solar panels is that they require a large amount 
+of land. As a result, installing them could coincide with CO2 emissions resulting from 
+this impact. To explore whether this is the case we will compare the graph showing development of solar panels and Australia's CO2 emissions including the ones from land use change.
+
+```{r, echo=FALSE, warning=FALSE}
+ggplot(australiacarbon2000,
+       aes(x = year,
+           y = co2_including_luc)) + 
+  geom_path() + 
+  labs(title = "Australia's co2 emissions including land use change since 2000",
+       x = "year",
+       y = "CO2 (Mt)")
+```
+
+Once again, it is important to note that the y-axis does not begin at *0 Mt* but instead at *400 Mt* in order to show trends more effectively. In this graph the trend between the increase 
+in solar photovoltaic energy and the decrease in CO2 emissions is less obvious due to 
+noise in the data. There is however no drastic increase in CO2 emissions from land use change linked to solar development. This is **good news** because it shows that the ability of landscapes t hold carbon is not being sacrificed for the sake of solar development in 
+the case of Australia.
+
+# Takeaways
+
+To conclude, Australia, one of the world's leaders in solar photovoltaic energy 
+appears to have been able to lower their CO2 emissions as a result of developing 
+this new technology without causing CO2 emissions as a result of land use change. 
+This means that this source of energy is carbon neutral and can be considered 
+sustainable at least in this regard. As a result Australia is 
+successfully achieving goal 7 of Rio+20 and they are providing their citizens access to sustainable modern energy.
+
+# Data Sources
+
+[IRENA](https://www.irena.org/Data)
+IRENA is the international renewable energy agency. Their mission is to support 
+countries worldwide in their transition to renewable energy.
+
+[Our World in data](https://ourworldindata.org/grapher/levelized-cost-of-energy)
+Our world in data is an organization that compiles all kinds of data into a single 
+place to help solve the world's largest problems.
+
+[The Global Carbon Project](https://www.globalcarbonproject.org/)
+The Global Carbon Project integrates knowledge of greenhouse gases for human 
+activities and the Earth system.
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
+&nbsp;
+
+
+
+
+
 
 
 
